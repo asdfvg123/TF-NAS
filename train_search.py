@@ -208,7 +208,7 @@ def main():
 
 		# training
 		epoch_start = time.time()
-		if epoch < 1:
+		if epoch < 0:
 			train_acc = train_wo_arch(train_queue, model, criterion, optimizer_w)
 		else:
 			train_acc = train_w_arch(train_queue, val_queue, model, criterion, optimizer_w, optimizer_a)
