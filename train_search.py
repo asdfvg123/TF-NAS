@@ -147,7 +147,7 @@ def main():
 		batch_size=args.batch_size, shuffle=True, pin_memory=True, num_workers=args.workers)
 
 	val_queue = torch.utils.data.DataLoader(
-		ImageList(root=args.img_root + "/val",
+		ImageList(root=args.img_root + "/train",
 				  list_path=args.val_list, 
 				  transform=val_transform), 
 		batch_size=args.batch_size, shuffle=True, pin_memory=True, num_workers=args.workers)
