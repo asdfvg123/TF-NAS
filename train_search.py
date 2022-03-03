@@ -392,14 +392,14 @@ def train_w_arch(train_queue, val_queue, model, criterion, optimizer_w, optimize
 
 		if step % 2 == 0:
 			# optimize a
-			# try:
-			# 	x_a, target_a = next(val_queue_iter)
-			# except:
-			# 	val_queue_iter = iter(val_queue)
-			# 	x_a, target_a = next(val_queue_iter)
+			try:
+				x_a, target_a = next(val_queue_iter)
+			except:
+				val_queue_iter = iter(val_queue)
+				x_a, target_a = next(val_queue_iter)
 
-			val_queue_iter = iter(val_queue)
-			x_a, target_a = next(val_queue_iter)
+			# val_queue_iter = iter(val_queue)
+			# x_a, target_a = next(val_queue_iter)
 
 			x_a = x_a.cuda(non_blocking=True)
 			target_a = target_a.cuda(non_blocking=True)
