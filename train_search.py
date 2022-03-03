@@ -53,7 +53,7 @@ parser.add_argument('--grad_clip', type=float, default=5.0, help='gradient clipp
 parser.add_argument('--T', type=float, default=5.0, help='temperature for gumbel softmax')
 parser.add_argument('--T_decay', type=float, default=0.96, help='temperature decay')
 parser.add_argument('--num_classes', type=int, default=100, help='class number of training set')
-parser.add_argument('--cost_type', type=str, default='tfnas', help='type of cost on the latency')
+parser.add_argument('--cost_type', type=str, default='add', help='type of cost on the latency')
 
 # others
 parser.add_argument('--seed', type=int, default=2, help='random seed')
@@ -141,13 +141,13 @@ def main():
 			normalize,
 		])
 	train_queue = torch.utils.data.DataLoader(
-		ImageList(root=args.img_root + "/train", 
+		ImageList(root=args.img_root + "/train",
 				  list_path=args.train_list, 
 				  transform=train_transform), 
 		batch_size=args.batch_size, shuffle=True, pin_memory=True, num_workers=args.workers)
 
 	val_queue = torch.utils.data.DataLoader(
-		ImageList(root=args.img_root + "/val", 
+		ImageList(root=args.img_root + "/val",
 				  list_path=args.val_list, 
 				  transform=val_transform), 
 		batch_size=args.batch_size, shuffle=True, pin_memory=True, num_workers=args.workers)
@@ -208,7 +208,7 @@ def main():
 
 		# training
 		epoch_start = time.time()
-		if epoch < 10:
+		if epoch < 1:
 			train_acc = train_wo_arch(train_queue, model, criterion, optimizer_w)
 		else:
 			train_acc = train_w_arch(train_queue, val_queue, model, criterion, optimizer_w, optimizer_a)
@@ -392,11 +392,14 @@ def train_w_arch(train_queue, val_queue, model, criterion, optimizer_w, optimize
 
 		if step % 2 == 0:
 			# optimize a
-			try:
-				x_a, target_a = next(val_queue_iter)
-			except:
-				val_queue_iter = iter(val_queue)
-				x_a, target_a = next(val_queue_iter)
+			# try:
+			# 	x_a, target_a = next(val_queue_iter)
+			# except:
+			# 	val_queue_iter = iter(val_queue)
+			# 	x_a, target_a = next(val_queue_iter)
+
+			val_queue_iter = iter(val_queue)
+			x_a, target_a = next(val_queue_iter)
 
 			x_a = x_a.cuda(non_blocking=True)
 			target_a = target_a.cuda(non_blocking=True)
@@ -409,14 +412,13 @@ def train_w_arch(train_queue, val_queue, model, criterion, optimizer_w, optimize
 			logits_a, lat = model(x_a, sampling=False)
 			loss_a = criterion(logits_a, target_a)
 
-			if(args.cost_type == 'tfnas'):
+			if(args.cost_type == 'add'):
 				loss_l = torch.abs(lat / args.target_lat - 1.) * args.lambda_lat
+				loss = loss_a + loss_l
 			elif(args.cost_type == 'mult'):
 				u = 1 if lat < args.target_lat else 10
 				loss_l = torch.pow(lat / args.target_lat, u)
-
-			# loss = loss_a + loss_l
-			loss = loss_a * loss_l
+				loss = loss_a * loss_l
 
 
 			optimizer_a.zero_grad()
