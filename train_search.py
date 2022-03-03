@@ -53,6 +53,7 @@ parser.add_argument('--grad_clip', type=float, default=5.0, help='gradient clipp
 parser.add_argument('--T', type=float, default=5.0, help='temperature for gumbel softmax')
 parser.add_argument('--T_decay', type=float, default=0.96, help='temperature decay')
 parser.add_argument('--num_classes', type=int, default=100, help='class number of training set')
+parser.add_argument('--cost_type', type=str, default='tfnas', help='type of cost on the latency')
 
 # others
 parser.add_argument('--seed', type=int, default=2, help='random seed')
@@ -408,8 +409,16 @@ def train_w_arch(train_queue, val_queue, model, criterion, optimizer_w, optimize
 
 			logits_a, lat = model(x_a, sampling=False)
 			loss_a = criterion(logits_a, target_a)
-			loss_l = torch.abs(lat / args.target_lat - 1.) * args.lambda_lat
-			loss = loss_a + loss_l
+
+			if(args.cost_type == 'tfnas'):
+				loss_l = torch.abs(lat / args.target_lat - 1.) * args.lambda_lat
+			elif(args.cost_type == 'mult'):
+				u = 1 if lat < args.target_lat else 10
+				loss_l = torch.pow(lat / args.target_lat, u)
+
+			# loss = loss_a + loss_l
+			loss = loss_a * loss_l
+
 
 			optimizer_a.zero_grad()
 			loss.backward()
