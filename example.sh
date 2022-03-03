@@ -1,6 +1,6 @@
 # For searching, taking the following script as an example
 CUDA_VISIBLE_DEVICES=0 python -W ignore -u train_search.py \
-	--img_root "Your ImageNet Train Set Path" \
+	--img_root "/work/08467/yjeon/longhorn/imagenet" \
 	--train_list "./dataset/ImageNet-100-effb0_train_cls_ratio0.8.txt" \
 	--val_list "./dataset/ImageNet-100-effb0_val_cls_ratio0.8.txt" \
 	--lookup_path "./latency_pkl/latency_gpu.pkl" \
