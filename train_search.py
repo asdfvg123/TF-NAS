@@ -63,11 +63,17 @@ parser.add_argument('--note', type=str, default='try', help='note for this run')
 parser.add_argument('--lambda_lat', type=float, default=0.1, help='trade off for latency')
 parser.add_argument('--target_lat', type=float, default=15.0, help='the target latency')
 
+parser.add_argument('--checkpoint_path', type=str, default=None, help='checkpoint path for load')
+parser.add_argument('--checkpoint_epoch', type=int, default=0, help='last epoch in checkpoint')
+
 
 args = parser.parse_args()
 
-args.save = os.path.join(args.save, 'search-{}-{}'.format(time.strftime("%Y%m%d-%H%M%S"), args.note))
-create_exp_dir(args.save, scripts_to_save=None)
+if args.checkpoint_path is None:
+	args.save = os.path.join(args.save, 'search-{}-{}'.format(time.strftime("%Y%m%d-%H%M%S"), args.note))
+	create_exp_dir(args.save, scripts_to_save=None)
+else:
+	args.save = args.checkpoint_path
 
 log_format = '%(asctime)s %(message)s'
 logging.basicConfig(stream=sys.stdout, level=logging.INFO,
@@ -88,6 +94,8 @@ def main():
 	cudnn.benchmark = True
 	logging.info("args = %s", args)
 
+
+	# latency lookup
 	with open(args.lookup_path, 'rb') as f:
 		lat_lookup = pickle.load(f)
 
@@ -97,11 +105,12 @@ def main():
 	logging.info("param size = %fMB", count_parameters_in_MB(model))
 
 	# save initial model
-	model_path = os.path.join(args.save, 'searched_model_00.pth.tar')
-	torch.save({
-			'state_dict': model.state_dict(),
-			'mc_mask_dddict': mc_mask_dddict,
-		}, model_path)
+	if args.checkpoint_path is None:
+		model_path = os.path.join(args.save, 'searched_model_00.pth.tar')
+		torch.save({
+				'state_dict': model.state_dict(),
+				'mc_mask_dddict': mc_mask_dddict,
+			}, model_path)
 
 	# get lr list
 	lr_list = []
@@ -152,7 +161,7 @@ def main():
 				  transform=val_transform), 
 		batch_size=args.batch_size, shuffle=True, pin_memory=True, num_workers=args.workers)
 
-	for epoch in range(args.epochs):
+	for epoch in range(args.checkpoint_epoch, args.epochs):
 		mc_num_dddict = get_mc_num_dddict(mc_mask_dddict)
 		model = Network(args.num_classes, mc_num_dddict, lat_lookup)
 		model = torch.nn.DataParallel(model).cuda()
