@@ -8,7 +8,7 @@ CUDA_VISIBLE_DEVICES=0 python -W ignore -u train_search.py \
 	--print_freq 100 \
 	--workers 4 \
 	--epochs 90 \
-	--batch_size 32 \
+	--batch_size 16\
 	--w_lr 0.025 \
 	--w_mom 0.9 \
 	--w_wd 1e-5 \
@@ -20,6 +20,7 @@ CUDA_VISIBLE_DEVICES=0 python -W ignore -u train_search.py \
 	--num_classes 100 \
 	--lambda_lat 0.1 \
 	--target_lat 15.0 \
+	--cost_type "add" \
 	--note "TF-NAS-lam0.1-lat15.0-gpu, fresh cost"
 
 
