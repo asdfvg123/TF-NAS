@@ -21,8 +21,9 @@ CUDA_VISIBLE_DEVICES=0 python -W ignore -u train_search.py \
 	--lambda_lat 0.1 \
 	--target_lat 15.0 \
 	--cost_type "add" \
-	--note "TF-NAS-lam0.1-lat15.0-gpu, fresh cost"
-
+	--note "TF-NAS-lam0.1-lat15.0-gpu, fresh cost" \
+	--checkpoint_path "/work/08467/yjeon/longhorn/myproject/TF-NAS/checkpoints/search-20220309-205710-TF-NAS-lam0.1-lat15.0-gpu-fresh-cost/" \
+	--checkpoint_epoch 36
 
 # # After searching, you can parse the searched architecture by
 # CUDA_VISIBLE_DEVICES=0 python -u parsing_model.py \

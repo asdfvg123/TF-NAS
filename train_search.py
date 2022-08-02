@@ -162,6 +162,8 @@ def main():
 		batch_size=args.batch_size, shuffle=True, pin_memory=True, num_workers=args.workers)
 
 	for epoch in range(args.checkpoint_epoch, args.epochs):
+		print(args.save, args.checkpoint_epoch, epoch)
+
 		mc_num_dddict = get_mc_num_dddict(mc_mask_dddict)
 		model = Network(args.num_classes, mc_num_dddict, lat_lookup)
 		model = torch.nn.DataParallel(model).cuda()
